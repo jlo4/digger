@@ -28,13 +28,7 @@ func GetFullPath(dir string) string {
 	if l.LogFatalError(err) {
 		return ""
 	}
-
-	fullName, err := filepath.Abs(fullpath)
-	if l.LogFatalError(err) {
-		return ""
-	}
-
-	return fullName
+	return fullpath
 }
 
 func IsDirectory(dirEntry string) bool {
