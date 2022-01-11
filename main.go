@@ -9,6 +9,7 @@ import (
 	c "digger/clockUtils"
 	dirUtils "digger/dirUtils"
 	fileUtils "digger/fileUtils"
+	"digger/logUtils"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -38,7 +39,7 @@ func selectFirstItem(listWidget *widget.List) {
 func main() {
 	a := app.New()
 	a.Settings().SetTheme(theme.DarkTheme())
-	w := a.NewWindow("Hello")
+	w := a.NewWindow("Digger")
 	w.Resize(fyne.NewSize(800, 800))
 
 	var myDirList MyDirList
@@ -89,6 +90,14 @@ func main() {
 	}
 	selectFirstItem(dirListWidget)
 
+	openfileWithVSCode := widget.NewButton("Open with code", func() {
+		file, err := adsBinding.GetValue(myDirList.selected)
+		if logUtils.LogFatalError(err) {
+			return
+		}
+		fileUtils.OpenFileWithProgram("code", file)
+	})
+
 	upDirectory := widget.NewButton("Up dir", func() {
 		//current, err := adsBinding.GetValue(myDirList.selected)
 		dirUtils.WalkUpDirectory()
@@ -116,7 +125,7 @@ func main() {
 		selectFirstItem(dirListWidget)
 	})
 
-	downDirectory := widget.NewButton("d dir", func() {
+	downDirectory := widget.NewButton("Down dir", func() {
 		current, err := adsBinding.GetValue(myDirList.selected)
 		dirUtils.WalkDownDirectory(current)
 		if err != nil {
@@ -144,7 +153,9 @@ func main() {
 	})
 
 	c.UpdateTime(clock)
-	w.SetContent(container.NewBorder(clock, currentDirectoryLabel, upDirectory, downDirectory, dirListWidget))
+	header := container.NewHBox(clock, openfileWithVSCode, currentDirectoryLabel, upDirectory, downDirectory)
+	content := container.NewBorder(header, nil, nil, nil, dirListWidget)
+	w.SetContent(content)
 
 	go func() {
 		for range time.Tick(time.Second) {
@@ -162,28 +173,3 @@ func main() {
 
 	w.ShowAndRun()
 }
-
-/*
-
-
-	current, err := currDir.Get()
-	dirUtils.WalkToDirectory(current)
-	if err != nil {
-		log.Fatal(err)
-	}
-	cDir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-	currDir.Set(cDir)
-	files := dirUtils.GetDirectoryList(cDir)
-	for _, file := range files {
-		isFile := fileUtils.IsFile(dirUtils.GetFullPath(file.Name()))
-		marker := ""
-		if isFile {
-			marker = "FILE"
-		}
-		perm := fileUtils.GetPermissions(dirUtils.GetFullPath(file.Name()))
-		dirList = append(dirList, fmt.Sprintf("%s - %s - %s\n", dirUtils.GetFullPath(file.Name()), marker, perm))
-	}
-*/
