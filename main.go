@@ -17,6 +17,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"golang.design/x/hotkey"
 )
 
 /*
@@ -169,6 +170,19 @@ func main() {
 			current, _ := currDir.Get()
 			currDir.Set(current)
 		}
+	}()
+
+	go func() {
+		hk := hotkey.New([]hotkey.Modifier{hotkey.ModCtrl, hotkey.ModShift}, 0xA0)
+		if err := hk.Register(); err != nil {
+			panic("Hotkey not registerd")
+		}
+
+		for range hk.Keydown() {
+			<-hk.Keydown()
+			<-hk.Keyup()
+		}
+
 	}()
 
 	w.ShowAndRun()
