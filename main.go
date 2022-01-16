@@ -17,6 +17,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/kardianos/service"
 )
 
 /*
@@ -38,6 +39,7 @@ func selectFirstItem(listWidget *widget.List) {
 
 func main() {
 	a := app.New()
+	setup()
 	a.Settings().SetTheme(theme.DarkTheme())
 	w := a.NewWindow("Digger")
 	w.Resize(fyne.NewSize(800, 800))
@@ -172,4 +174,45 @@ func main() {
 	}()
 
 	w.ShowAndRun()
+
+}
+
+var logger service.Logger
+
+type program struct{}
+
+func (p *program) Start(s service.Service) error {
+	go p.run()
+	return nil
+}
+func (p *program) run() {
+	return
+}
+func (p *program) Stop(s service.Service) error {
+	return nil
+}
+
+func setup() {
+	svcConfig := &service.Config{
+		Name:        "Digger",
+		DisplayName: "Digger",
+		Description: "Directory explorer",
+	}
+	digger := &program{}
+	s, err := service.New(digger, svcConfig)
+
+	logger, err = s.Logger(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	/*err = s.Install()
+	if err != nil {
+		fmt.Printf("installed %s", err.Error())
+	}*/
+
+	err = s.Start()
+	if err != nil {
+		logger.Error(err)
+	}
 }
